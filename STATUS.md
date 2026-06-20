@@ -25,12 +25,15 @@ Owns: `runner.ts`. Depends on: Lane A `dispatch` + `listJobs`.
 - [ ] (on-site) swap `terminal` → `imessage` provider
 - BLOCKED ON: _(note here if waiting on Lane A)_
 
-## Lane C — Live Board   `status: not started`
+## Lane C — Live Board   `status: done ✅`
 Owns: `panel/index.html`. Depends on: Lane A `listJobs`.
-- [ ] static board layout (rows: agent / task / status / result)
-- [ ] live `listJobs` subscription (Convex reactive client) or 2s poll
-- [ ] running→done visual states
-- BLOCKED ON: _(note here if waiting on Lane A)_
+- [x] static board layout (rows: agent / task / status / result)
+- [x] live `listJobs` 2s poll via `POST /api/query` → `jobs:listJobs`
+- [x] running (amber pulse) → done (green) → blocked (red) visual states
+- [x] summary bar: running / done / blocked counts
+- [x] trace ID displayed under result when present
+- BLOCKED ON: nothing — panel is complete, open `panel/index.html` in browser
+- CONVEX_URL used: `http://127.0.0.1:3210`
 
 ---
 
