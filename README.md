@@ -8,6 +8,10 @@ Built at the Voice Coding Mini-Hackathon with **Voice Cursor · Convex · Respan
 
 ## See it in action
 
+**🎥 [Watch the demo →](https://youtu.be/dfqp4CfwDoY)**
+
+[![Maestro demo video](https://img.youtube.com/vi/dfqp4CfwDoY/maxresdefault.jpg)](https://youtu.be/dfqp4CfwDoY)
+
 ![Agents edit real code in Cursor, send the diffs to Telegram, and commit on approve](assets/demo-editor-telegram.png)
 
 *Speak one command → three agents edit real files in parallel (Cursor, left) → each sends its diff to your chat (Telegram, right) → you reply **approve** → it's committed to git (terminal). Reply **reject** and it reverts to a clean baseline.*
