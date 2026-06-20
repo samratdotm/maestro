@@ -31,13 +31,15 @@ npx convex env set RESPAN_PATH=<actual path>
 npx convex run reset:clearJobs
 ```
 
-## Lane B — Spectrum Runner   `status: done ✅`
+## Lane B — Spectrum Runner   `status: done ✅ (round 2)`
 Owns: `runner.ts`. Depends on: Lane A `dispatch` + `listJobs`.
 - [x] terminal-provider smoke test — spectrum-ts v5 confirmed: `message.content.text`, `message.reply()`, async message loop
-- [x] inbound message → `agent.dispatch({command})` — gracefully skips if agent.ts not yet generated
-- [x] poll `listJobs` every 1.5s → `message.reply()` per settled job, 120s timeout guard
-- [ ] (on-site) swap `terminal` → `imessage` provider — ONE line: `terminal.config()` → `imessage.config()`
-- BLOCKED ON: Lane A `agent.ts` — `api.agent.dispatch` missing from generated types; runner detects this at runtime and reports it. Wire up once A signals dispatch is live.
+- [x] inbound message → `api.agent.dispatch({command})` — now properly typed (api.agent live in generated types)
+- [x] poll `listJobs` every 1.5s → reply per settled job, 120s timeout guard
+- [x] **round 2** CHANNEL env flag: `CHANNEL=terminal` (default) or `CHANNEL=imessage` — no code edit needed on-site
+- [x] **round 2** polished reply UX: opening "🎼 Dispatched N agent(s)…", per-agent "✓ [agent-x] result" / "⚠ blocked", closing "✅ All N done" or "✅ N/M done, M blocked"
+- [x] **round 2** iMessage swap wired: `CHANNEL=imessage` uses `imessage.config()` + PHOTON_PROJECT_ID/SECRET — one env change, no code edit
+- BLOCKED ON: nothing. On-site: set `CHANNEL=imessage PHOTON_PROJECT_ID=… PHOTON_PROJECT_SECRET=…` and run.
 
 ## Lane C — Live Board   `status: done ✅ (round 2 — demo-ready)`
 Owns: `panel/index.html`. Depends on: Lane A `listJobs`.
