@@ -7,15 +7,29 @@
 
 ---
 
-## Lane A — Convex Backend   `status: done ✅`
-Owns: `convex/schema.ts`, `convex/jobs.ts`, `convex/agent.ts`, `lib/respan.ts`, **the §6 contract**, `package.json`, `.env`.
+## Lane A — Convex Backend   `status: done ✅ (round 2)`
+Owns: `convex/schema.ts`, `convex/jobs.ts`, `convex/agent.ts`, `convex/reset.ts`, `lib/respan.ts`, **the §6 contract**, `package.json`, `.env`.
 - [x] `schema.ts` — jobs table
 - [x] `jobs.ts` — createJob / updateJob / listJobs
 - [x] `lib/respan.ts` — Respan client + MOCK_MODE (ready for real Respan credentials)
-- [x] `agent.ts` — `dispatch()` fan-out + `processJob()` (default Convex runtime, MOCK_MODE=true)
-- [x] smoke test: `npx convex run agent:dispatch '{"command":"Add tests to auth, update the README, and audit N+1 queries"}'` → 3 jobs, all status=done with mock results
+- [x] `agent.ts` — `dispatch()` fan-out + `processJob()` (scheduler fire-and-return, MOCK_MODE=true)
+- [x] `reset.ts` — `clearJobs` mutation (clean board between demo runs; tested: wiped 11 rows → [])
+- [x] `callLLM` hardened: RESPAN_PATH env var, missing-creds guard, better system prompt, trims content, surfaces Respan error body
+- [x] smoke test: dispatch → 3 jobs done; clearJobs → empty board
 - CONTRACT: **unchanged** ✅
-- SIGNALS OUT: **dispatch + listJobs + processJob LIVE** — B unblocked. CONVEX_URL=http://127.0.0.1:3210, MOCK_MODE=true set via `npx convex env set`
+- SIGNALS OUT: **ALL functions LIVE**. CONVEX_URL=http://127.0.0.1:3210
+
+### Go-live commands (run when Respan credits land)
+```
+npx convex env set RESPAN_BASE_URL=<from respan.ai/docs>
+npx convex env set RESPAN_API_KEY=<your key>
+npx convex env set RESPAN_MODEL=<active model id>
+npx convex env set MOCK_MODE=false
+# Optional — only if Respan's path differs from /chat/completions:
+npx convex env set RESPAN_PATH=<actual path>
+# Reset board before demo:
+npx convex run reset:clearJobs
+```
 
 ## Lane B — Spectrum Runner   `status: done ✅`
 Owns: `runner.ts`. Depends on: Lane A `dispatch` + `listJobs`.
