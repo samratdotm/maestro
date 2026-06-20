@@ -4,6 +4,7 @@ import { dirname, join } from 'path';
 import { Spectrum } from 'spectrum-ts';
 import { terminal } from 'spectrum-ts/providers/terminal';
 import { imessage } from 'spectrum-ts/providers/imessage';
+import { telegram } from 'spectrum-ts/providers/telegram';
 import { ConvexHttpClient } from 'convex/browser';
 import { api } from './convex/_generated/api.js';
 
@@ -29,13 +30,24 @@ const REPO_PATH = process.env.REPO_PATH ?? '';
 // CHANNEL=imessage switches to Photon iMessage; default is terminal (no creds needed)
 const channel = (process.env.CHANNEL ?? 'terminal').toLowerCase();
 
-const app = channel === 'imessage'
-  ? await Spectrum({
-      projectId: process.env.PHOTON_PROJECT_ID!,
-      projectSecret: process.env.PHOTON_PROJECT_SECRET!,
-      providers: [imessage.config()],
-    })
-  : await Spectrum({ providers: [terminal.config()] });
+let app;
+if (channel === 'imessage') {
+  app = await Spectrum({
+    projectId: process.env.PHOTON_PROJECT_ID!,
+    projectSecret: process.env.PHOTON_PROJECT_SECRET!,
+    providers: [imessage.config()],
+  });
+} else if (channel === 'telegram') {
+  // Inbound rides Photon's Fusor webhook (cloud mode auto-registers it);
+  // outbound goes DIRECT to Telegram's Bot API → no shared-line congestion.
+  app = await Spectrum({
+    projectId: process.env.PHOTON_PROJECT_ID!,
+    projectSecret: process.env.PHOTON_PROJECT_SECRET!,
+    providers: [telegram.config({ botToken: process.env.TELEGRAM_BOT_TOKEN! })],
+  });
+} else {
+  app = await Spectrum({ providers: [terminal.config()] });
+}
 
 console.log(`Maestro ready on ${channel} — type a voice command:`);
 
@@ -121,17 +133,19 @@ async function safeReply(
   message: { reply: (text: string) => Promise<unknown> },
   text: string,
 ) {
-  for (let attempt = 1; attempt <= 3; attempt++) {
+  const MAX = 5;
+  for (let attempt = 1; attempt <= MAX; attempt++) {
     try {
       await message.reply(text);
+      await sleep(450); // pace sends so we don't burst Photon ("temporarily unavailable")
       return;
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      console.error(`[send] attempt ${attempt}/3 failed: ${msg}`);
-      if (attempt < 3) await sleep(800 * attempt);
+      console.error(`[send] attempt ${attempt}/${MAX} failed: ${msg}`);
+      if (attempt < MAX) await sleep(1000 * attempt);
     }
   }
-  console.error(`[send] gave up after 3 attempts: "${text.slice(0, 60)}"`);
+  console.error(`[send] gave up after ${MAX} attempts: "${text.slice(0, 60)}"`);
 }
 
 // Restore the sandbox repo to its last commit so each demo run starts clean.

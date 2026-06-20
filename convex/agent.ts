@@ -62,8 +62,9 @@ async function callLLM(task: string, file?: string): Promise<{ content: string; 
 
 function splitCommand(command: string): string[] {
   const parts = command
-    .split(/,\s*and\s+|,\s*|\s+and\s+/i)
-    .map((s) => s.trim())
+    // split on commas, "and", and sentence-ending periods
+    .split(/,\s*and\s+|,\s*|\s+and\s+|\.\s+/i)
+    .map((s) => s.trim().replace(/[.\s]+$/, ""))
     .filter(Boolean);
   return parts.length > 0 ? parts : [command.trim()];
 }
