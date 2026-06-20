@@ -9,39 +9,61 @@
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: #0f1117;
+      background: #0a0c12;
       color: #e2e8f0;
       min-height: 100vh;
-      padding: 0 0 48px;
+      padding: 0 0 64px;
+      font-size: 16px;
     }
 
+    /* ── Header ── */
     header {
-      background: #1a1d27;
+      background: #12151f;
       border-bottom: 1px solid #2d3148;
-      padding: 18px 32px;
+      padding: 24px 48px;
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 20px;
       position: sticky;
       top: 0;
       z-index: 10;
     }
-    header h1 {
-      font-size: 1.1rem;
-      font-weight: 700;
+    .header-brand h1 {
+      font-size: 1.7rem;
+      font-weight: 800;
       color: #a78bfa;
-      letter-spacing: -0.01em;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
     }
-    header .meta {
-      font-size: 0.8rem;
+    .header-brand .tagline {
+      font-size: 0.95rem;
       color: #64748b;
+      margin-top: 3px;
+      letter-spacing: 0.01em;
     }
-    .pulse {
+    .header-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .live-pill {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #22c55e;
+      background: #052e16;
+      border: 1px solid #14532d;
+      border-radius: 99px;
+      padding: 4px 12px;
+    }
+    .pulse-dot {
       width: 8px; height: 8px;
       border-radius: 50%;
       background: #22c55e;
       animation: blink 2s infinite;
-      margin-left: auto;
       flex-shrink: 0;
     }
     @keyframes blink {
@@ -49,23 +71,81 @@
       50% { opacity: 0.25; }
     }
     .last-refresh {
-      font-size: 0.72rem;
+      font-size: 0.78rem;
       color: #475569;
     }
 
     main {
-      max-width: 1000px;
-      margin: 32px auto;
-      padding: 0 24px;
+      max-width: 1200px;
+      margin: 36px auto;
+      padding: 0 40px;
     }
 
-    .section-title {
-      font-size: 0.7rem;
+    /* ── Error banner ── */
+    .error-msg {
+      color: #f87171;
+      font-size: 0.9rem;
+      padding: 12px 16px;
+      background: #1e1010;
+      border-radius: 8px;
+      border: 1px solid #7f1d1d;
+      margin-bottom: 24px;
+    }
+
+    /* ── Latest dispatch hero ── */
+    .dispatch-hero {
+      background: #13162a;
+      border: 1px solid #312e81;
+      border-radius: 14px;
+      padding: 22px 28px;
+      margin-bottom: 36px;
+    }
+    .dispatch-hero-label {
+      font-size: 0.72rem;
       font-weight: 700;
-      letter-spacing: 0.12em;
+      letter-spacing: 0.14em;
       text-transform: uppercase;
+      color: #6366f1;
+      margin-bottom: 10px;
+    }
+    .dispatch-command {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #e2e8f0;
+      line-height: 1.4;
+    }
+    .dispatch-meta {
+      margin-top: 10px;
+      display: flex;
+      gap: 20px;
+      font-size: 0.82rem;
       color: #64748b;
-      margin-bottom: 14px;
+    }
+    .dispatch-meta strong {
+      font-weight: 700;
+    }
+    .dispatch-meta .run-count  strong { color: #fdba74; }
+    .dispatch-meta .done-count strong { color: #4ade80; }
+    .dispatch-meta .blk-count  strong { color: #f87171; }
+    .dispatch-hero.empty {
+      border-color: #1e293b;
+      background: #0f1117;
+    }
+    .dispatch-hero.empty .dispatch-command {
+      color: #334155;
+      font-style: italic;
+      font-size: 1rem;
+      font-weight: 400;
+    }
+
+    /* ── Section label ── */
+    .section-title {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #475569;
+      margin-bottom: 16px;
     }
 
     /* ── Job table ── */
@@ -75,35 +155,45 @@
     }
     .job-table th {
       text-align: left;
-      font-size: 0.68rem;
+      font-size: 0.72rem;
       font-weight: 700;
       letter-spacing: 0.1em;
       text-transform: uppercase;
       color: #475569;
-      padding: 0 16px 10px;
+      padding: 0 20px 12px;
       border-bottom: 1px solid #2d3148;
     }
     .job-table th:first-child { padding-left: 0; }
 
     .job-row {
-      border-bottom: 1px solid #1e2235;
-      transition: background 0.2s;
+      border-bottom: 1px solid #1a1d2e;
+      transition: background 0.3s;
     }
-    .job-row:hover { background: #171a26; }
+    .job-row:hover { background: #13162a; }
     .job-row td {
-      padding: 14px 16px;
-      vertical-align: top;
-      font-size: 0.85rem;
+      padding: 18px 20px;
+      vertical-align: middle;
+      font-size: 1rem;
     }
     .job-row td:first-child { padding-left: 0; }
+
+    /* Flash when a row flips running→done */
+    @keyframes flash-done {
+      0%   { background: #052e16; }
+      30%  { background: #166534; }
+      100% { background: transparent; }
+    }
+    .job-row.just-done {
+      animation: flash-done 1.8s ease-out forwards;
+    }
 
     /* ── Agent badge ── */
     .agent-badge {
       display: inline-block;
-      font-size: 0.72rem;
+      font-size: 0.85rem;
       font-weight: 700;
-      padding: 2px 8px;
-      border-radius: 4px;
+      padding: 4px 12px;
+      border-radius: 6px;
       background: #1e1b4b;
       color: #a5b4fc;
       white-space: nowrap;
@@ -113,10 +203,10 @@
     .status-badge {
       display: inline-flex;
       align-items: center;
-      gap: 5px;
-      font-size: 0.72rem;
+      gap: 7px;
+      font-size: 0.85rem;
       font-weight: 700;
-      padding: 3px 9px;
+      padding: 6px 14px;
       border-radius: 99px;
       white-space: nowrap;
     }
@@ -135,105 +225,95 @@
       color: #f87171;
       border: 1px solid #7f1d1d;
     }
-    .dot {
-      width: 6px; height: 6px;
+    .sdot {
+      width: 8px; height: 8px;
       border-radius: 50%;
       flex-shrink: 0;
     }
-    .running .dot { background: #fb923c; animation: blink 1.2s infinite; }
-    .done    .dot { background: #4ade80; }
-    .blocked .dot { background: #f87171; }
+    .running .sdot { background: #fb923c; animation: blink 1.2s infinite; }
+    .done    .sdot { background: #4ade80; }
+    .blocked .sdot { background: #f87171; }
 
     /* ── Task text ── */
     .task-text {
       color: #cbd5e1;
-      line-height: 1.45;
+      line-height: 1.5;
+      font-size: 1rem;
     }
 
     /* ── Result cell ── */
     .result-text {
       color: #94a3b8;
-      line-height: 1.55;
-      font-size: 0.82rem;
-      max-width: 340px;
+      line-height: 1.6;
+      font-size: 0.92rem;
+      max-width: 380px;
       white-space: pre-wrap;
       word-break: break-word;
     }
     .result-placeholder {
       color: #334155;
-      font-size: 0.78rem;
+      font-size: 0.9rem;
       font-style: italic;
     }
 
-    /* ── Trace ── */
-    .trace-id {
-      font-size: 0.68rem;
-      color: #4f46e5;
-      margin-top: 4px;
-      font-family: 'SF Mono', 'Fira Code', monospace;
-      word-break: break-all;
+    /* ── Respan badge ── */
+    .respan-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 8px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #818cf8;
+      background: #1e1b4b;
+      border: 1px solid #3730a3;
+      border-radius: 6px;
+      padding: 3px 10px;
+      white-space: nowrap;
     }
 
     /* ── Timestamp ── */
     .ts {
-      font-size: 0.72rem;
+      font-size: 0.85rem;
       color: #475569;
       white-space: nowrap;
     }
 
-    /* ── Summary bar ── */
-    .summary {
-      display: flex;
-      gap: 20px;
-      margin-bottom: 20px;
-      font-size: 0.8rem;
-    }
-    .summary-item {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      color: #64748b;
-    }
-    .summary-item strong { font-weight: 700; }
-    .summary-item.run  strong { color: #fdba74; }
-    .summary-item.done strong { color: #4ade80; }
-    .summary-item.blk  strong { color: #f87171; }
-
-    /* ── Empty / error ── */
-    .empty {
+    /* ── Empty ── */
+    .empty-row td {
       color: #334155;
-      font-size: 0.85rem;
-      padding: 32px 0;
+      font-size: 0.95rem;
+      padding: 48px 0;
       text-align: center;
-    }
-    .error-msg {
-      color: #f87171;
-      font-size: 0.8rem;
-      padding: 10px 14px;
-      background: #1e1010;
-      border-radius: 6px;
-      border: 1px solid #7f1d1d;
-      margin-bottom: 20px;
     }
   </style>
 </head>
 <body>
 
 <header>
-  <div>
-    <h1>Maestro — Agent Board</h1>
-    <div class="meta">live · 2 s refresh</div>
+  <div class="header-brand">
+    <h1>Maestro</h1>
+    <div class="tagline">Conduct your AI coding agents by voice.</div>
   </div>
-  <div class="pulse"></div>
-  <span class="last-refresh" id="refreshTs">–</span>
+  <div class="header-right">
+    <div class="live-pill">
+      <span class="pulse-dot"></span>LIVE
+    </div>
+    <span class="last-refresh" id="refreshTs">–</span>
+  </div>
 </header>
 
 <main>
   <div id="errorBanner"></div>
 
-  <div class="summary" id="summary"></div>
+  <!-- Latest dispatch hero -->
+  <div class="dispatch-hero empty" id="dispatchHero">
+    <div class="dispatch-hero-label">Latest Dispatch</div>
+    <div class="dispatch-command" id="dispatchCommand">Waiting for a voice command…</div>
+    <div class="dispatch-meta" id="dispatchMeta"></div>
+  </div>
 
-  <div class="section-title">Jobs</div>
+  <div class="section-title">All Jobs</div>
   <table class="job-table">
     <thead>
       <tr>
@@ -245,7 +325,7 @@
       </tr>
     </thead>
     <tbody id="jobsBody">
-      <tr><td colspan="5" class="empty">Waiting for jobs…</td></tr>
+      <tr class="empty-row"><td colspan="5">Waiting for jobs…</td></tr>
     </tbody>
   </table>
 </main>
@@ -253,6 +333,13 @@
 <script>
 const CONVEX_URL = 'http://127.0.0.1:3210';
 const POLL_MS = 2000;
+const BATCH_WINDOW_MS = 5000;   // jobs within 5s of the newest = same dispatch
+const FLASH_DURATION_MS = 3000; // how long the just-done flash lasts
+
+// id → last-seen status, for detecting running→done flips
+const prevStatus = {};
+// id → timestamp of flip to done, for driving flash CSS
+const flipTs = {};
 
 function esc(s) {
   return String(s ?? '')
@@ -263,38 +350,81 @@ function esc(s) {
 }
 
 function fmt(ts) {
-  const d = new Date(ts);
-  const now = Date.now();
-  const diff = now - ts;
-  if (diff < 60_000) return `${Math.round(diff / 1000)}s ago`;
+  const diff = Date.now() - ts;
+  if (diff < 60_000)   return `${Math.round(diff / 1000)}s ago`;
   if (diff < 3600_000) return `${Math.round(diff / 60_000)}m ago`;
-  return d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+  return new Date(ts).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+}
+
+function detectFlips(jobs) {
+  for (const j of jobs) {
+    const prev = prevStatus[j._id];
+    if (prev === 'running' && j.status === 'done') {
+      flipTs[j._id] = Date.now();
+    }
+    prevStatus[j._id] = j.status;
+  }
 }
 
 function renderJob(job) {
-  const statusClass = job.status;
-  const label = { running: 'running', done: 'done', blocked: 'blocked' }[job.status] ?? job.status;
+  const isFlashing = flipTs[job._id] && (Date.now() - flipTs[job._id] < FLASH_DURATION_MS);
+  const flashClass = isFlashing ? ' just-done' : '';
 
   const resultHtml = job.result
     ? `<div class="result-text">${esc(job.result)}</div>`
     : `<span class="result-placeholder">${job.status === 'running' ? 'in progress…' : '–'}</span>`;
 
-  const traceHtml = job.trace
-    ? `<div class="trace-id">trace: ${esc(job.trace)}</div>`
+  const respan = job.trace
+    ? `<div><span class="respan-badge">🔍 Respan-traced</span></div>`
     : '';
 
+  const label = { running: 'running', done: 'done ✓', blocked: 'blocked' }[job.status] ?? job.status;
+
   return `
-    <tr class="job-row" data-id="${esc(job._id)}">
+    <tr class="job-row${flashClass}" data-id="${esc(job._id)}">
       <td><span class="agent-badge">${esc(job.agent)}</span></td>
       <td><span class="task-text">${esc(job.task)}</span></td>
       <td>
-        <span class="status-badge ${statusClass}">
-          <span class="dot"></span>${label}
+        <span class="status-badge ${esc(job.status)}">
+          <span class="sdot"></span>${label}
         </span>
       </td>
-      <td>${resultHtml}${traceHtml}</td>
+      <td>${resultHtml}${respan}</td>
       <td><span class="ts">${fmt(job.createdAt)}</span></td>
     </tr>`;
+}
+
+function updateHero(jobs) {
+  const hero = document.getElementById('dispatchHero');
+  const cmdEl = document.getElementById('dispatchCommand');
+  const metaEl = document.getElementById('dispatchMeta');
+
+  if (jobs.length === 0) {
+    hero.classList.add('empty');
+    cmdEl.textContent = 'Waiting for a voice command…';
+    metaEl.innerHTML = '';
+    return;
+  }
+
+  // Most recent batch: jobs within BATCH_WINDOW_MS of the newest createdAt
+  const newest = jobs[0].createdAt; // listJobs returns desc
+  const batch = jobs.filter(j => newest - j.createdAt <= BATCH_WINDOW_MS);
+  const counts = { running: 0, done: 0, blocked: 0 };
+  for (const j of batch) counts[j.status] = (counts[j.status] ?? 0) + 1;
+  const total = batch.length;
+
+  hero.classList.remove('empty');
+
+  // Summarize the batch tasks as a command-like string
+  const taskList = batch.map(j => j.task).join(' · ');
+  cmdEl.textContent = taskList;
+
+  metaEl.innerHTML = `
+    <span>${total} agent${total !== 1 ? 's' : ''} dispatched · ${fmt(newest)}</span>
+    <span class="run-count"><strong>${counts.running}</strong> running</span>
+    <span class="done-count"><strong>${counts.done}</strong> done</span>
+    ${counts.blocked ? `<span class="blk-count"><strong>${counts.blocked}</strong> blocked</span>` : ''}
+  `;
 }
 
 async function refresh() {
@@ -307,24 +437,17 @@ async function refresh() {
     });
     if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
     const data = await res.json();
-
     if (data.status === 'error') throw new Error(data.errorMessage ?? 'Convex error');
     const jobs = data.value ?? [];
 
     errEl.innerHTML = '';
 
-    // summary counts
-    const counts = { running: 0, done: 0, blocked: 0 };
-    for (const j of jobs) counts[j.status] = (counts[j.status] ?? 0) + 1;
-    document.getElementById('summary').innerHTML = `
-      <div class="summary-item run"><span class="dot" style="background:#fb923c;width:8px;height:8px;border-radius:50%;"></span><strong>${counts.running}</strong> running</div>
-      <div class="summary-item done"><span class="dot" style="background:#4ade80;width:8px;height:8px;border-radius:50%;"></span><strong>${counts.done}</strong> done</div>
-      <div class="summary-item blk"><span class="dot" style="background:#f87171;width:8px;height:8px;border-radius:50%;"></span><strong>${counts.blocked}</strong> blocked</div>
-    `;
+    detectFlips(jobs);
+    updateHero(jobs);
 
     const tbody = document.getElementById('jobsBody');
     if (jobs.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5" class="empty">No jobs yet — dispatch a command to get started.</td></tr>';
+      tbody.innerHTML = '<tr class="empty-row"><td colspan="5">No jobs yet — dispatch a command to get started.</td></tr>';
     } else {
       tbody.innerHTML = jobs.map(renderJob).join('');
     }

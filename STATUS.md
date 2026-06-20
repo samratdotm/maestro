@@ -39,14 +39,19 @@ Owns: `runner.ts`. Depends on: Lane A `dispatch` + `listJobs`.
 - [ ] (on-site) swap `terminal` → `imessage` provider — ONE line: `terminal.config()` → `imessage.config()`
 - BLOCKED ON: Lane A `agent.ts` — `api.agent.dispatch` missing from generated types; runner detects this at runtime and reports it. Wire up once A signals dispatch is live.
 
-## Lane C — Live Board   `status: done ✅`
+## Lane C — Live Board   `status: done ✅ (round 2 — demo-ready)`
 Owns: `panel/index.html`. Depends on: Lane A `listJobs`.
 - [x] static board layout (rows: agent / task / status / result)
 - [x] live `listJobs` 2s poll via `POST /api/query` → `jobs:listJobs`
 - [x] running (amber pulse) → done (green) → blocked (red) visual states
 - [x] summary bar: running / done / blocked counts
 - [x] trace ID displayed under result when present
-- BLOCKED ON: nothing — panel is complete, open `panel/index.html` in browser
+- [x] **round 2** projector-legible fonts (1rem base, 1.7rem h1) + generous spacing
+- [x] **round 2** Maestro header with tagline "Conduct your AI coding agents by voice."
+- [x] **round 2** Latest Dispatch hero banner — batches jobs within 5s of newest createdAt
+- [x] **round 2** running→done flash animation (green highlight, 1.8s fade-out)
+- [x] **round 2** "🔍 Respan-traced" badge per row when `trace` field is set
+- BLOCKED ON: nothing — open `panel/index.html` directly in browser
 - CONVEX_URL used: `http://127.0.0.1:3210`
 
 ---
