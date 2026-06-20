@@ -9,20 +9,36 @@ async function callLLM(task: string): Promise<{ content: string; traceId: string
   const baseUrl = process.env.RESPAN_BASE_URL ?? "";
   const apiKey = process.env.RESPAN_API_KEY ?? "";
   const model = process.env.RESPAN_MODEL ?? "gpt-4o";
-  const res = await fetch(`${baseUrl}/chat/completions`, {
+  const path = process.env.RESPAN_PATH ?? "/chat/completions";
+
+  if (!baseUrl) throw new Error("RESPAN_BASE_URL is not set");
+  if (!apiKey) throw new Error("RESPAN_API_KEY is not set");
+
+  const res = await fetch(`${baseUrl}${path}`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
     body: JSON.stringify({
       model,
       messages: [
-        { role: "system", content: "You are a senior software engineering agent. Complete the given coding task concisely." },
+        {
+          role: "system",
+          content:
+            "You are a coding agent reporting back to your team. " +
+            "Given a task, reply in 1-2 sentences describing exactly what you changed or produced — " +
+            "be specific (file names, function names, what was added/fixed). No preamble.",
+        },
         { role: "user", content: task },
       ],
     }),
   });
-  if (!res.ok) throw new Error(`Respan error: ${res.status} ${await res.text()}`);
+  if (!res.ok) {
+    const body = await res.text().catch(() => "(unreadable)");
+    throw new Error(`Respan ${res.status}: ${body}`);
+  }
   const data = (await res.json()) as { choices: { message: { content: string } }[]; id: string };
-  return { content: data.choices[0]?.message?.content ?? "", traceId: data.id ?? "" };
+  const content = data.choices?.[0]?.message?.content?.trim() ?? "";
+  if (!content) throw new Error("Respan returned empty content");
+  return { content, traceId: data.id ?? "" };
 }
 
 function splitCommand(command: string): string[] {
