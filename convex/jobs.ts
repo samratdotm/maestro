@@ -2,12 +2,13 @@ import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
 export const createJob = mutation({
-  args: { task: v.string(), agent: v.string() },
-  handler: async (ctx, { task, agent }) => {
+  args: { task: v.string(), agent: v.string(), file: v.optional(v.string()) },
+  handler: async (ctx, { task, agent, file }) => {
     return await ctx.db.insert("jobs", {
       task,
       agent,
       status: "running",
+      ...(file !== undefined && { file }),
       createdAt: Date.now(),
     });
   },

@@ -8,6 +8,7 @@ export default defineSchema({
     status: v.union(v.literal("running"), v.literal("done"), v.literal("blocked")),
     result: v.optional(v.string()),
     trace: v.optional(v.string()),
+    file: v.optional(v.string()),
     createdAt: v.number(),
   }),
 });

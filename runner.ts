@@ -1,4 +1,6 @@
-import { readFileSync } from 'fs';
+import { readFileSync, writeFileSync, mkdirSync } from 'fs';
+import { execSync } from 'child_process';
+import { dirname, join } from 'path';
 import { Spectrum } from 'spectrum-ts';
 import { terminal } from 'spectrum-ts/providers/terminal';
 import { imessage } from 'spectrum-ts/providers/imessage';
@@ -19,6 +21,10 @@ function loadEnv(...files: string[]) {
 loadEnv('.env', '.env.local');
 
 const convex = new ConvexHttpClient(process.env.CONVEX_URL ?? 'http://127.0.0.1:3210');
+
+// REAL_EDITS=true → agents actually write files in REPO_PATH and we text the git diff.
+const REAL_EDITS = process.env.REAL_EDITS === 'true';
+const REPO_PATH = process.env.REPO_PATH ?? '';
 
 // CHANNEL=imessage switches to Photon iMessage; default is terminal (no creds needed)
 const channel = (process.env.CHANNEL ?? 'terminal').toLowerCase();
@@ -49,6 +55,9 @@ async function handleCommand(
   command: string,
   message: { reply: (text: string) => Promise<unknown> },
 ) {
+  // Start each run from the repo's clean baseline so diffs are repeatable.
+  if (REAL_EDITS) resetRepo();
+
   let jobIds: string[];
   try {
     const result = await convex.action(api.agent.dispatch, { command });
@@ -78,7 +87,13 @@ async function handleCommand(
         pending.delete(job._id);
         if (job.status === 'done') {
           doneCount++;
-          await safeReply(message,`✓ [${job.agent}] ${job.result ?? '(no result)'}`);
+          if (REAL_EDITS && REPO_PATH && job.file) {
+            const diff = applyEdit(job.file, job.result ?? '');
+            const snippet = diff.length > 1200 ? diff.slice(0, 1200) + '\n…(truncated)' : diff;
+            await safeReply(message, `✏️ [${job.agent}] edited ${job.file}\n\n${snippet || '(no changes)'}`);
+          } else {
+            await safeReply(message,`✓ [${job.agent}] ${job.result ?? '(no result)'}`);
+          }
         } else {
           blockedCount++;
           await safeReply(message,`⚠ [${job.agent}] BLOCKED: ${job.result ?? '(no detail)'}`);
@@ -117,6 +132,28 @@ async function safeReply(
     }
   }
   console.error(`[send] gave up after 3 attempts: "${text.slice(0, 60)}"`);
+}
+
+// Restore the sandbox repo to its last commit so each demo run starts clean.
+function resetRepo() {
+  if (!REAL_EDITS || !REPO_PATH) return;
+  try {
+    execSync('git checkout -- .', { cwd: REPO_PATH });
+  } catch (err) {
+    console.error('[repo] reset failed:', err);
+  }
+}
+
+// Write the agent's generated content to its file and return the git diff.
+function applyEdit(file: string, content: string): string {
+  const full = join(REPO_PATH, file);
+  mkdirSync(dirname(full), { recursive: true });
+  writeFileSync(full, content);
+  try {
+    return execSync(`git diff --no-color -- "${file}"`, { cwd: REPO_PATH, encoding: 'utf8' }).trim();
+  } catch (err) {
+    return `(diff failed: ${err})`;
+  }
 }
 
 function sleep(ms: number) {
