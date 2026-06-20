@@ -27,6 +27,9 @@ const convex = new ConvexHttpClient(process.env.CONVEX_URL ?? 'http://127.0.0.1:
 const REAL_EDITS = process.env.REAL_EDITS === 'true';
 const REPO_PATH = process.env.REPO_PATH ?? '';
 
+// Human-in-the-loop: after agents propose edits, we wait for "approve"/"reject".
+let pendingReview = false;
+
 // CHANNEL=imessage switches to Photon iMessage; default is terminal (no creds needed)
 const channel = (process.env.CHANNEL ?? 'terminal').toLowerCase();
 
@@ -54,13 +57,18 @@ console.log(`Maestro ready on ${channel} — type a voice command:`);
 for await (const [, message] of app.messages) {
   if (message.content.type !== 'text') continue;
 
-  const command = message.content.text.trim();
-  if (!command) continue;
+  const text = message.content.text.trim();
+  if (!text) continue;
 
-  console.log(`[cmd] "${command}"`);
-
-  // Handle concurrently so the message loop stays unblocked
-  handleCommand(command, message).catch(console.error);
+  // If agents are awaiting a verdict and this looks like one, act on it.
+  if (pendingReview && isDecision(text)) {
+    console.log(`[decision] "${text}"`);
+    handleDecision(text, message).catch(console.error);
+  } else {
+    console.log(`[cmd] "${text}"`);
+    // Handle concurrently so the message loop stays unblocked
+    handleCommand(text, message).catch(console.error);
+  }
 }
 
 async function handleCommand(
@@ -121,9 +129,15 @@ async function handleCommand(
 
   const total = doneCount + blockedCount;
   if (blockedCount === 0) {
-    await safeReply(message,`✅ All ${total} done.`);
+    await safeReply(message,`✅ All ${total} agents done.`);
   } else {
     await safeReply(message,`✅ ${doneCount}/${total} done, ${blockedCount} blocked.`);
+  }
+
+  // Human-in-the-loop: agents only PROPOSED edits — you decide.
+  if (REAL_EDITS && REPO_PATH && doneCount > 0) {
+    pendingReview = true;
+    await safeReply(message, `🧑‍⚖️ Review the diffs above. Reply "approve" to commit, or "reject" to revert.`);
   }
 }
 
@@ -148,13 +162,47 @@ async function safeReply(
   console.error(`[send] gave up after ${MAX} attempts: "${text.slice(0, 60)}"`);
 }
 
-// Restore the sandbox repo to its last commit so each demo run starts clean.
+// Restore the sandbox repo to the 'baseline' tag so each demo run starts identical,
+// even after a previous run was approved & committed.
 function resetRepo() {
   if (!REAL_EDITS || !REPO_PATH) return;
   try {
-    execSync('git checkout -- .', { cwd: REPO_PATH });
+    execSync('git reset --hard baseline && git clean -fd', { cwd: REPO_PATH });
+  } catch {
+    try { execSync('git checkout -- .', { cwd: REPO_PATH }); } catch (err) {
+      console.error('[repo] reset failed:', err);
+    }
+  }
+}
+
+// Does this message read as an approve/reject verdict?
+function isDecision(text: string): boolean {
+  return /^\s*(approve|approved|yes|ship|lgtm|👍|reject|rejected|no|revert|discard|👎)\b/i.test(text);
+}
+
+// Commit (approve) or revert (reject) the pending agent edits.
+async function handleDecision(
+  text: string,
+  message: { reply: (text: string) => Promise<unknown> },
+) {
+  pendingReview = false;
+  const approve = /^\s*(approve|approved|yes|ship|lgtm|👍)\b/i.test(text);
+  if (!REAL_EDITS || !REPO_PATH) { await safeReply(message, 'Nothing to act on.'); return; }
+  try {
+    if (approve) {
+      execSync('git add -A', { cwd: REPO_PATH });
+      execSync(
+        'git -c user.email=demo@maestro.dev -c user.name=Maestro commit -m "Maestro: apply approved agent edits"',
+        { cwd: REPO_PATH },
+      );
+      const sha = execSync('git rev-parse --short HEAD', { cwd: REPO_PATH, encoding: 'utf8' }).trim();
+      await safeReply(message, `✅ Approved — committed to the repo (${sha}). The agents' work is shipped.`);
+    } else {
+      execSync('git reset --hard baseline && git clean -fd', { cwd: REPO_PATH });
+      await safeReply(message, `↩️ Rejected — reverted all edits. Repo is back to clean.`);
+    }
   } catch (err) {
-    console.error('[repo] reset failed:', err);
+    await safeReply(message, `Decision failed: ${err}`);
   }
 }
 
