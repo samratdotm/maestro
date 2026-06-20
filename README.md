@@ -6,6 +6,18 @@ Built at the Voice Coding Mini-Hackathon with **Voice Cursor · Convex · Respan
 
 ---
 
+## See it in action
+
+![Agents edit real code in Cursor, send the diffs to Telegram, and commit on approve](assets/demo-editor-telegram.png)
+
+*Speak one command → three agents edit real files in parallel (Cursor, left) → each sends its diff to your chat (Telegram, right) → you reply **approve** → it's committed to git (terminal). Reply **reject** and it reverts to a clean baseline.*
+
+![Live agent board and Respan tracing every call](assets/demo-board-respan.png)
+
+*The live board (left) shows every agent running → done in real time. Respan (right) traces every model call — here: 11 requests, $0.02 spend, 0% errors, fully auditable.*
+
+---
+
 ## The problem
 
 AI coding agents are powerful, but using them keeps you chained to your desk. You start one and wait. It stops to ask permission and gets stuck if you've stepped away. Run several at once and it's chaos — and you can't really trust code an agent wrote while you weren't looking.
