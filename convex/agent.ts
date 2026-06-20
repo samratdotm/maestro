@@ -56,7 +56,7 @@ export const dispatch = action({
     const jobIds = await Promise.all(
       tasks.map((task, i) => ctx.runMutation(api.jobs.createJob, { task, agent: `agent-${i + 1}` }))
     );
-    await Promise.all(jobIds.map((id) => ctx.runAction(api.agent.processJob, { id })));
+    await Promise.all(jobIds.map((id) => ctx.scheduler.runAfter(0, api.agent.processJob, { id })));
     return { jobIds: jobIds.map(String) };
   },
 });
