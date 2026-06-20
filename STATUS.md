@@ -17,13 +17,13 @@ Owns: `convex/schema.ts`, `convex/jobs.ts`, `convex/agent.ts`, `lib/respan.ts`, 
 - CONTRACT: **unchanged** ✅
 - SIGNALS OUT: _(post here when dispatch/listJobs are live for B & C)_
 
-## Lane B — Spectrum Runner   `status: not started`
+## Lane B — Spectrum Runner   `status: done ✅`
 Owns: `runner.ts`. Depends on: Lane A `dispatch` + `listJobs`.
-- [ ] terminal-provider smoke test (verify spectrum-ts v5 message shape!)
-- [ ] inbound message → `agent.dispatch({command})`
-- [ ] subscribe/poll `listJobs` → send each result via `message.reply`
-- [ ] (on-site) swap `terminal` → `imessage` provider
-- BLOCKED ON: _(note here if waiting on Lane A)_
+- [x] terminal-provider smoke test — spectrum-ts v5 confirmed: `message.content.text`, `message.reply()`, async message loop
+- [x] inbound message → `agent.dispatch({command})` — gracefully skips if agent.ts not yet generated
+- [x] poll `listJobs` every 1.5s → `message.reply()` per settled job, 120s timeout guard
+- [ ] (on-site) swap `terminal` → `imessage` provider — ONE line: `terminal.config()` → `imessage.config()`
+- BLOCKED ON: Lane A `agent.ts` — `api.agent.dispatch` missing from generated types; runner detects this at runtime and reports it. Wire up once A signals dispatch is live.
 
 ## Lane C — Live Board   `status: done ✅`
 Owns: `panel/index.html`. Depends on: Lane A `listJobs`.
