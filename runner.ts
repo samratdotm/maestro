@@ -54,11 +54,11 @@ async function handleCommand(
     const result = await convex.action(api.agent.dispatch, { command });
     jobIds = result.jobIds;
   } catch (err) {
-    await message.reply(`Dispatch error: ${err}`);
+    await safeReply(message,`Dispatch error: ${err}`);
     return;
   }
 
-  await message.reply(`🎼 Dispatched ${jobIds.length} agent(s)…`);
+  await safeReply(message,`🎼 Dispatched ${jobIds.length} agent(s)…`);
 
   // Poll listJobs until all dispatched jobs settle
   const pending = new Set(jobIds);
@@ -78,26 +78,45 @@ async function handleCommand(
         pending.delete(job._id);
         if (job.status === 'done') {
           doneCount++;
-          await message.reply(`✓ [${job.agent}] ${job.result ?? '(no result)'}`);
+          await safeReply(message,`✓ [${job.agent}] ${job.result ?? '(no result)'}`);
         } else {
           blockedCount++;
-          await message.reply(`⚠ [${job.agent}] BLOCKED: ${job.result ?? '(no detail)'}`);
+          await safeReply(message,`⚠ [${job.agent}] BLOCKED: ${job.result ?? '(no detail)'}`);
         }
       }
     }
   }
 
   if (pending.size > 0) {
-    await message.reply(`⏱ Timed out — ${pending.size} agent(s) still running.`);
+    await safeReply(message,`⏱ Timed out — ${pending.size} agent(s) still running.`);
     return;
   }
 
   const total = doneCount + blockedCount;
   if (blockedCount === 0) {
-    await message.reply(`✅ All ${total} done.`);
+    await safeReply(message,`✅ All ${total} done.`);
   } else {
-    await message.reply(`✅ ${doneCount}/${total} done, ${blockedCount} blocked.`);
+    await safeReply(message,`✅ ${doneCount}/${total} done, ${blockedCount} blocked.`);
   }
+}
+
+// Photon's gRPC stream can drop transiently ("[upstream] Connection dropped");
+// Spectrum marks the send non-retryable, so retry it ourselves before giving up.
+async function safeReply(
+  message: { reply: (text: string) => Promise<unknown> },
+  text: string,
+) {
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      await message.reply(text);
+      return;
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error(`[send] attempt ${attempt}/3 failed: ${msg}`);
+      if (attempt < 3) await sleep(800 * attempt);
+    }
+  }
+  console.error(`[send] gave up after 3 attempts: "${text.slice(0, 60)}"`);
 }
 
 function sleep(ms: number) {
