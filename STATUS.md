@@ -7,15 +7,15 @@
 
 ---
 
-## Lane A — Convex Backend   `status: not started`
+## Lane A — Convex Backend   `status: done ✅`
 Owns: `convex/schema.ts`, `convex/jobs.ts`, `convex/agent.ts`, `lib/respan.ts`, **the §6 contract**, `package.json`, `.env`.
-- [ ] `schema.ts` — jobs table
-- [ ] `jobs.ts` — createJob / updateJob / listJobs
-- [ ] `lib/respan.ts` — Respan client + MOCK_MODE
-- [ ] `agent.ts` — `dispatch()` fan-out + `processJob()`
-- [ ] smoke test: `npx convex run agent:dispatch '{"command":"..."}'` → N rows appear
+- [x] `schema.ts` — jobs table
+- [x] `jobs.ts` — createJob / updateJob / listJobs
+- [x] `lib/respan.ts` — Respan client + MOCK_MODE (ready for real Respan credentials)
+- [x] `agent.ts` — `dispatch()` fan-out + `processJob()` (default Convex runtime, MOCK_MODE=true)
+- [x] smoke test: `npx convex run agent:dispatch '{"command":"Add tests to auth, update the README, and audit N+1 queries"}'` → 3 jobs, all status=done with mock results
 - CONTRACT: **unchanged** ✅
-- SIGNALS OUT: _(post here when dispatch/listJobs are live for B & C)_
+- SIGNALS OUT: **dispatch + listJobs + processJob LIVE** — B unblocked. CONVEX_URL=http://127.0.0.1:3210, MOCK_MODE=true set via `npx convex env set`
 
 ## Lane B — Spectrum Runner   `status: done ✅`
 Owns: `runner.ts`. Depends on: Lane A `dispatch` + `listJobs`.
@@ -38,7 +38,7 @@ Owns: `panel/index.html`. Depends on: Lane A `listJobs`.
 ---
 
 ## Cross-lane signals (conductor relays these)
-- _e.g. "A: dispatch live, signature unchanged" → tell B + C_
+- **A→B,C**: `agent:dispatch` and `agent:processJob` deployed and verified. Contract unchanged. MOCK_MODE=true. B: your runner.ts should now resolve `api.agent.dispatch` — retest the full flow.
 
 ## Shared-resource rules
 - Only **Lane A** runs `npm install` / edits `.env` + `package.json`.
